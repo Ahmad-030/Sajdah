@@ -1,8 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Services/Location_Service.dart';
+import '../Services/PrayerTime_Service.dart';
+import '../Services/Notification_Service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -15,7 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String calculationMethod = 'Hanafi';
   int reminderMinutes = 10;
   bool notificationsEnabled = true;
-  String locationText = 'Khurarianwala, Punjab';
+  String locationText = 'Loading...';
 
   final List<String> methods = [
     'Hanafi',
@@ -28,7 +28,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _loadLocation();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      calculationMethod = prefs.getString('calculation_method') ?? 'Hanafi';
+      reminderMinutes = prefs.getInt('reminder_minutes') ?? 10;
+      notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('calculation_method', calculationMethod);
+    await prefs.setInt('reminder_minutes', reminderMinutes);
+    await prefs.setBool('notifications_enabled', notificationsEnabled);
   }
 
   Future<void> _loadLocation() async {
@@ -38,7 +55,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         locationText = '${location['city']}, ${location['country']}';
       });
     } catch (e) {
+      setState(() {
+        locationText = 'Location unavailable';
+      });
       print('Error loading location: $e');
+    }
+  }
+
+  Future<void> _testNotification() async {
+    await NotificationService.showImmediateNotification(
+      title: '🕌 Azaan Test',
+      body: 'This is how prayer notifications will appear',
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🔔 Test notification sent!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -92,10 +128,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Receive prayer time notifications',
                     trailing: Switch(
                       value: notificationsEnabled,
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           notificationsEnabled = value;
                         });
+                        await _saveSettings();
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  value
+                                      ? '🔔 Notifications enabled'
+                                      : '🔕 Notifications disabled'
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
                       },
                       activeColor: Theme.of(context).colorScheme.primary,
                     ),
@@ -114,28 +164,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Text('$min min'),
                       ))
                           .toList(),
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           reminderMinutes = value!;
                         });
+                        await _saveSettings();
                       },
                     ),
                   ),
                   const SizedBox(height: 15),
                   _buildSettingCard(
                     icon: Icons.volume_up,
-                    title: 'Test Azaan Sound',
+                    title: 'Test Notification',
                     subtitle: 'Preview notification sound',
                     trailing: IconButton(
                       icon: const Icon(Icons.play_arrow),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('🕌 Playing Azaan sound...'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onPressed: _testNotification,
                     ),
                   ),
 
@@ -157,10 +201,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Text(method),
                       ))
                           .toList(),
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           calculationMethod = value!;
                         });
+                        await _saveSettings();
+                        await PrayerTimeService.saveCalculationMethod(value!);
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('📐 Calculation method changed to $value'),
+                              duration: const Duration(seconds: 2),
+                              action: SnackBarAction(
+                                label: 'Refresh',
+                                onPressed: () {
+                                  // Trigger refresh in home screen
+                                },
+                              ),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -171,14 +232,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: locationText,
                     trailing: IconButton(
                       icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        _loadLocation();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('📍 Updating location...'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                      onPressed: () async {
+                        setState(() {
+                          locationText = 'Updating...';
+                        });
+                        await _loadLocation();
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('📍 Location updated'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -206,7 +273,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         builder: (context) => AlertDialog(
                           title: const Text('About Sajdah'),
                           content: const Text(
-                            'Sajdah helps you stay connected to your prayers with accurate prayer times, Azaan notifications, and Qibla direction.\n\nMay Allah accept your prayers.',
+                            'Sajdah helps you stay connected to your prayers with:\n\n'
+                                '• Accurate prayer times\n'
+                                '• Azaan notifications\n'
+                                '• Qibla direction compass\n'
+                                '• Multiple calculation methods\n\n'
+                                'May Allah accept your prayers. 🤲',
                           ),
                           actions: [
                             TextButton(
@@ -224,7 +296,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Privacy Policy',
                     subtitle: 'View our privacy policy',
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Privacy Policy'),
+                          content: const SingleChildScrollView(
+                            child: Text(
+                              'Sajdah Prayer Times App\n\n'
+                                  'We respect your privacy. This app:\n\n'
+                                  '• Uses location only for prayer times\n'
+                                  '• Does not collect personal data\n'
+                                  '• Does not share data with third parties\n'
+                                  '• Stores preferences locally on your device\n\n'
+                                  'Location permission is required only for accurate prayer time calculations.',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 15),
                   _buildSettingCard(

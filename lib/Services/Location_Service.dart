@@ -1,38 +1,72 @@
 import 'dart:math' as math;
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class LocationService {
   static Future<Map<String, dynamic>> getCurrentLocation() async {
     try {
-      // In production, use Geolocator:
-      // bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      // if (!serviceEnabled) {
-      //   throw Exception('Location services are disabled');
-      // }
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled. Please enable location in settings.');
+      }
 
-      // LocationPermission permission = await Geolocator.checkPermission();
-      // if (permission == LocationPermission.denied) {
-      //   permission = await Geolocator.requestPermission();
-      // }
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permission denied');
+        }
+      }
 
-      // Position position = await Geolocator.getCurrentPosition(
-      //   desiredAccuracy: LocationAccuracy.high,
-      // );
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied');
+      }
 
-      // List<Placemark> placemarks = await placemarkFromCoordinates(
-      //   position.latitude,
-      //   position.longitude,
-      // );
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
 
-      // For demo purposes - Khurarianwala coordinates
+      // Get address from coordinates
+      String city = 'Unknown';
+      String country = 'Unknown';
+
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          city = placemarks[0].locality ??
+              placemarks[0].subAdministrativeArea ??
+              placemarks[0].administrativeArea ??
+              'Unknown';
+          country = placemarks[0].country ?? 'Unknown';
+        }
+      } catch (e) {
+        print('Error getting address: $e');
+      }
+
       return {
-        'latitude': 31.5204,
-        'longitude': 73.0479,
-        'city': 'Khurarianwala',
-        'country': 'Pakistan',
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'city': city,
+        'country': country,
       };
     } catch (e) {
       print('Error getting location: $e');
-      rethrow;
+
+      // Fallback to default location (Karachi)
+      return {
+        'latitude': 24.8607,
+        'longitude': 67.0011,
+        'city': 'Karachi',
+        'country': 'Pakistan',
+      };
     }
   }
 
@@ -58,13 +92,23 @@ class LocationService {
 
     final lat1 = lat * math.pi / 180;
     final lat2 = makkahLat * math.pi / 180;
+    final dLat = (makkahLat - lat) * math.pi / 180;
     final dLng = (makkahLng - lng) * math.pi / 180;
 
-    final distance = math.acos(
-        math.sin(lat1) * math.sin(lat2) +
-            math.cos(lat1) * math.cos(lat2) * math.cos(dLng)
-    ) * 6371; // Earth radius in km
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1) * math.cos(lat2) *
+            math.sin(dLng / 2) * math.sin(dLng / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    const earthRadius = 6371; // Earth radius in km
+    final distance = earthRadius * c;
 
     return distance;
+  }
+
+  static Future<Position> getCurrentPosition() async {
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 }

@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../Services/Location_Service.dart';
 import '../Services/PrayerTime_Service.dart';
+import '../Services/Notification_Service.dart';
 import '../Widgets/Prayer_Card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,13 +32,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Map<String, String> prayerTimesFormatted = {};
   Map<String, dynamic>? locationData;
 
-  final Map<String, bool> alarmEnabled = {
-    'Fajr': true,
-    'Dhuhr': true,
-    'Asr': true,
-    'Maghrib': true,
-    'Isha': true,
-  };
+  Map<String, bool> alarmEnabled = {};
 
   @override
   void initState() {
@@ -63,6 +55,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _initializeApp() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
+      // Load saved alarm states
+      alarmEnabled = await PrayerTimeService.loadAllAlarmStates();
+
       // Get location
       locationData = await LocationService.getCurrentLocation();
 
@@ -78,22 +77,46 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       // Update next prayer
       _updateNextPrayer();
 
+      // Schedule notifications
+      await NotificationService.scheduleAllPrayerNotifications(prayerTimes);
+
       setState(() {
         locationText = '${locationData!['city']}, ${locationData!['country']}';
         isLoading = false;
       });
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Prayer times updated successfully'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         locationText = 'Location unavailable';
         isLoading = false;
       });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       print('Error initializing app: $e');
     }
   }
 
   void _formatPrayerTimes() {
     prayerTimesFormatted = prayerTimes.map((key, value) {
-      final hour = value.hour > 12 ? value.hour - 12 : value.hour;
+      final hour = value.hour > 12 ? value.hour - 12 : (value.hour == 0 ? 12 : value.hour);
       final minute = value.minute.toString().padLeft(2, '0');
       final period = value.hour >= 12 ? 'PM' : 'AM';
       return MapEntry(key, '$hour:$minute $period');
@@ -110,9 +133,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _updateCountdown() {
     if (prayerTimes.isEmpty || nextPrayer == 'Loading...') return;
 
-    final duration = PrayerTimeService.getTimeUntilPrayer(
-        prayerTimes[nextPrayer]!
-    );
+    final prayerTime = prayerTimes[nextPrayer];
+    if (prayerTime == null) return;
+
+    final duration = PrayerTimeService.getTimeUntilPrayer(prayerTime);
 
     setState(() {
       final hours = duration.inHours.toString().padLeft(2, '0');
@@ -131,6 +155,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final period = now.hour >= 12 ? 'PM' : 'AM';
       currentTime = '$hour:$minute:$second $period';
     });
+  }
+
+  Future<void> _handleAlarmToggle(String prayer, bool value) async {
+    setState(() {
+      alarmEnabled[prayer] = value;
+    });
+
+    // Save to preferences
+    await PrayerTimeService.saveAlarmState(prayer, value);
+
+    // Reschedule notifications
+    if (prayerTimes.isNotEmpty) {
+      await NotificationService.scheduleAllPrayerNotifications(prayerTimes);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              value
+                  ? '🔔 $prayer notification enabled'
+                  : '🔕 $prayer notification disabled'
+          ),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   @override
@@ -240,7 +291,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     animation: _controller,
                     builder: (context, child) {
                       return Transform.scale(
-                        scale: 1.0 + (math.sin(_controller.value * 2 * math.pi) * 0.02),
+                        scale: 1.0 +
+                            (math.sin(_controller.value * 2 * math.pi) *
+                                0.02),
                         child: Container(
                           padding: const EdgeInsets.all(25),
                           decoration: BoxDecoration(
@@ -253,7 +306,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             borderRadius: BorderRadius.circular(25),
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.3),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -321,13 +377,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: PrayerCard(
                         prayerName: entry.key,
                         prayerTime: entry.value,
-                        isAlarmOn: alarmEnabled[entry.key] ?? false,
-                        onAlarmToggle: (value) {
-                          setState(() {
-                            alarmEnabled[entry.key] = value;
-                          });
-                          // Save to SharedPreferences in production
-                        },
+                        isAlarmOn: alarmEnabled[entry.key] ?? true,
+                        onAlarmToggle: (value) => _handleAlarmToggle(entry.key, value),
                       ),
                     );
                   }).toList(),

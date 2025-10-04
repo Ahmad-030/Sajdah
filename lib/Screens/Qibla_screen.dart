@@ -1,8 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_compass/flutter_compass.dart';
 import '../Services/Location_Service.dart';
 import '../Widgets/Compass_painter.dart';
 
@@ -20,7 +19,9 @@ class _QiblaScreenState extends State<QiblaScreen>
   double _qiblaDirection = 0;
   int _distanceToKaaba = 0;
   bool isLoading = true;
+  bool _hasCompassSupport = true;
   String locationText = 'Detecting location...';
+  StreamSubscription<CompassEvent>? _compassSubscription;
 
   @override
   void initState() {
@@ -30,13 +31,28 @@ class _QiblaScreenState extends State<QiblaScreen>
       vsync: this,
     );
     _initializeQibla();
+    _initializeCompass();
+  }
 
-    // In production, use flutter_compass to get real-time compass readings:
-    // _compassSubscription = FlutterCompass.events?.listen((event) {
-    //   setState(() {
-    //     _direction = event.heading ?? 0;
-    //   });
-    // });
+  Future<void> _initializeCompass() async {
+    // Check if compass is available
+    final hasCompass = await FlutterCompass.events?.isEmpty ?? true;
+
+    if (!hasCompass) {
+      setState(() {
+        _hasCompassSupport = false;
+      });
+      return;
+    }
+
+    // Listen to compass events
+    _compassSubscription = FlutterCompass.events?.listen((event) {
+      if (mounted) {
+        setState(() {
+          _direction = event.heading ?? 0;
+        });
+      }
+    });
   }
 
   Future<void> _initializeQibla() async {
@@ -74,7 +90,7 @@ class _QiblaScreenState extends State<QiblaScreen>
   @override
   void dispose() {
     _controller.dispose();
-    // _compassSubscription?.cancel();
+    _compassSubscription?.cancel();
     super.dispose();
   }
 
@@ -138,6 +154,30 @@ class _QiblaScreenState extends State<QiblaScreen>
                   ],
                 ),
               ),
+              if (!_hasCompassSupport)
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.orange),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.warning, color: Colors.orange),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Compass not available on this device',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               Expanded(
                 child: isLoading
                     ? const Center(
@@ -170,7 +210,8 @@ class _QiblaScreenState extends State<QiblaScreen>
                           ),
                           // Rotating Compass
                           Transform.rotate(
-                            angle: (_qiblaDirection - _direction) * (math.pi / 180),
+                            angle: (_qiblaDirection - _direction) *
+                                (math.pi / 180),
                             child: Container(
                               width: 280,
                               height: 280,
@@ -184,11 +225,34 @@ class _QiblaScreenState extends State<QiblaScreen>
                           ),
                           // Kaaba Icon
                           Transform.rotate(
-                            angle: (_qiblaDirection - _direction) * (math.pi / 180),
+                            angle: (_qiblaDirection - _direction) *
+                                (math.pi / 180),
                             child: const Icon(
                               Icons.mosque,
                               size: 60,
                               color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                          // Current direction indicator
+                          Positioned(
+                            top: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Text(
+                                '${_direction.toStringAsFixed(0)}°',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -258,9 +322,9 @@ class _QiblaScreenState extends State<QiblaScreen>
                           color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(15),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.info_outline,
                               color: Color(0xFF2E7D32),

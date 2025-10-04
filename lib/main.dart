@@ -1,10 +1,45 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'Screens/Splash_screen.dart';
+import 'Services/Notification_Service.dart';
 
-void main() {
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize timezone
+  tz.initializeTimeZones();
+
+  // Initialize notifications
+  await NotificationService.initialize();
+
+  // Request permissions
+  await _requestPermissions();
+
+  // Set system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+
   runApp(const SajdahApp());
+}
+
+Future<void> _requestPermissions() async {
+  // Request location permission
+  await Permission.location.request();
+
+  // Request notification permission (Android 13+)
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
 }
 
 class SajdahApp extends StatefulWidget {
