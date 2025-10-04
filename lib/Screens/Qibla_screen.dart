@@ -35,28 +35,48 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Future<void> _initializeCompass() async {
-    // Check if compass is available
-    final hasCompass = await FlutterCompass.events?.isEmpty ?? true;
+    try {
+      // Check if compass events are available
+      final compassStream = FlutterCompass.events;
 
-    if (!hasCompass) {
-      setState(() {
-        _hasCompassSupport = false;
+      if (compassStream == null) {
+        setState(() {
+          _hasCompassSupport = false;
+        });
+        return;
+      }
+
+      // Listen to compass events
+      _compassSubscription = compassStream.listen((CompassEvent event) {
+        if (mounted && event.heading != null) {
+          setState(() {
+            _direction = event.heading!;
+          });
+        }
+      }, onError: (error) {
+        print('Compass error: $error');
+        if (mounted) {
+          setState(() {
+            _hasCompassSupport = false;
+          });
+        }
       });
-      return;
-    }
-
-    // Listen to compass events
-    _compassSubscription = FlutterCompass.events?.listen((event) {
+    } catch (e) {
+      print('Error initializing compass: $e');
       if (mounted) {
         setState(() {
-          _direction = event.heading ?? 0;
+          _hasCompassSupport = false;
         });
       }
-    });
+    }
   }
 
   Future<void> _initializeQibla() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       // Get current location
       final location = await LocationService.getCurrentLocation();
 
@@ -72,17 +92,28 @@ class _QiblaScreenState extends State<QiblaScreen>
         location['longitude'],
       );
 
-      setState(() {
-        _qiblaDirection = qiblaDir;
-        _distanceToKaaba = distance.round();
-        locationText = '${location['city']}, ${location['country']}';
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _qiblaDirection = qiblaDir;
+          _distanceToKaaba = distance.round();
+          locationText = '${location['city']}, ${location['country']}';
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        locationText = 'Location unavailable';
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          locationText = 'Location unavailable';
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       print('Error initializing Qibla: $e');
     }
   }
@@ -131,7 +162,10 @@ class _QiblaScreenState extends State<QiblaScreen>
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.white),
-                      onPressed: _initializeQibla,
+                      onPressed: () {
+                        _initializeQibla();
+                        _initializeCompass();
+                      },
                     ),
                   ],
                 ),
@@ -170,7 +204,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Compass not available on this device',
+                            'Compass not available. Please check device sensors.',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -333,7 +367,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                             SizedBox(width: 10),
                             Flexible(
                               child: Text(
-                                'Rotate your device horizontally for accuracy',
+                                'Hold device flat and rotate for accurate direction',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.black87,

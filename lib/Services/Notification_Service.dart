@@ -24,24 +24,30 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // Create notification channel for Android
+    // Create notification channel for Android with azan sound
     const androidChannel = AndroidNotificationChannel(
       'prayer_times_channel',
       'Prayer Times',
       description: 'Notifications for prayer times',
-      importance: Importance.high,
+      importance: Importance.max,
       playSound: true,
       enableVibration: true,
+      sound: RawResourceAndroidNotificationSound('azan'), // Add azan.mp3 to android/app/src/main/res/raw/
     );
 
     await _notifications
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(androidChannel);
+
+    // Request exact alarm permission for Android 12+
+    await _notifications
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
   }
 
   static void _onNotificationTapped(NotificationResponse response) {
-    // Handle notification tap
     print('Notification tapped: ${response.payload}');
   }
 
@@ -49,31 +55,33 @@ class NotificationService {
     required int id,
     required String prayerName,
     required DateTime prayerTime,
-    int reminderMinutes = 10,
+    int reminderMinutes = 5, // Changed to 5 minutes before
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final isEnabled = prefs.getBool('alarm_$prayerName') ?? true;
 
     if (!isEnabled) return;
 
-    // Schedule main notification at prayer time
-    await _scheduleNotification(
-      id: id,
-      title: '🕌 Time for $prayerName Prayer',
-      body: 'It\'s time to pray $prayerName',
-      scheduledTime: prayerTime,
-    );
-
-    // Schedule reminder notification
+    // Schedule reminder notification 5 minutes before prayer
     final reminderTime = prayerTime.subtract(Duration(minutes: reminderMinutes));
     if (reminderTime.isAfter(DateTime.now())) {
       await _scheduleNotification(
-        id: id + 1000, // Different ID for reminder
-        title: '⏰ $prayerName Prayer Reminder',
-        body: '$prayerName prayer in $reminderMinutes minutes',
+        id: id + 1000,
+        title: '⏰ $prayerName Prayer Alert',
+        body: '$prayerName prayer in $reminderMinutes minutes. Get ready! 🕌',
         scheduledTime: reminderTime,
+        isReminder: true,
       );
     }
+
+    // Schedule main azan notification at exact prayer time
+    await _scheduleNotification(
+      id: id,
+      title: '🕌 $prayerName Azaan',
+      body: 'It\'s time for $prayerName prayer. Allahu Akbar! 🤲',
+      scheduledTime: prayerTime,
+      isReminder: false,
+    );
   }
 
   static Future<void> _scheduleNotification({
@@ -81,32 +89,44 @@ class NotificationService {
     required String title,
     required String body,
     required DateTime scheduledTime,
+    required bool isReminder,
   }) async {
     await _notifications.zonedSchedule(
       id,
       title,
       body,
       tz.TZDateTime.from(scheduledTime, tz.local),
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           'prayer_times_channel',
           'Prayer Times',
           channelDescription: 'Notifications for prayer times',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
           playSound: true,
           enableVibration: true,
           fullScreenIntent: true,
           icon: '@mipmap/ic_launcher',
+          // Play azan sound only for main prayer notification, not reminder
+          sound: isReminder
+              ? null
+              : const RawResourceAndroidNotificationSound('azan'),
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: title,
+          ),
+          // Keep notification visible
+          ongoing: !isReminder,
+          autoCancel: true,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
+          sound: isReminder ? 'default' : 'azan.mp3', // Add azan.mp3 to ios/Runner/Resources/
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      // REMOVED: uiLocalNotificationDateInterpretation - This line was causing the error
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -132,11 +152,12 @@ class NotificationService {
       final prayer = prayers[i];
       final prayerTime = prayerTimes[prayer];
 
-      if (prayerTime != null) {
+      if (prayerTime != null && prayerTime.isAfter(DateTime.now())) {
         await schedulePrayerNotification(
           id: i,
           prayerName: prayer,
           prayerTime: prayerTime,
+          reminderMinutes: 5, // 5 minutes before
         );
       }
     }
@@ -156,8 +177,11 @@ class NotificationService {
           'Prayer Times',
           importance: Importance.high,
           priority: Priority.high,
+          sound: RawResourceAndroidNotificationSound('azan'),
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          sound: 'azan.mp3',
+        ),
       ),
     );
   }

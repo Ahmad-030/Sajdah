@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../Widgets/Glass Nav.dart';
 
 import '../Home_screen.dart';
 import '../Qibla_screen.dart';
@@ -40,55 +40,34 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: _pages[_selectedIndex],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(25),
-            topRight: Radius.circular(25),
+      bottomNavigationBar: GlassyNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        selectedColor: Theme.of(context).colorScheme.primary,
+        unselectedColor: Colors.grey.withOpacity(0.6),
+        items: const [
+          GlassyNavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
           ),
-          child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            selectedItemColor: Theme.of(context).colorScheme.primary,
-            unselectedItemColor: Colors.grey,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_rounded),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore_rounded),
-                label: 'Qibla',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings_rounded),
-                label: 'Settings',
-              ),
-            ],
+          GlassyNavItem(
+            icon: Icons.explore_rounded,
+            label: 'Qibla',
           ),
-        ),
+          GlassyNavItem(
+            icon: Icons.settings_rounded,
+            label: 'Settings',
+          ),
+        ],
       ),
     );
   }

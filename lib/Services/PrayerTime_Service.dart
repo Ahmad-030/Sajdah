@@ -9,12 +9,12 @@ class PrayerTimeService {
     try {
       // Get calculation method from preferences
       final prefs = await SharedPreferences.getInstance();
-      final methodName = prefs.getString('calculation_method') ?? 'Karachi';
+      final methodName = prefs.getString('calculation_method') ?? 'Hanafi';
 
       // Create coordinates
       final coordinates = Coordinates(latitude, longitude);
 
-      // Select calculation method
+      // Select calculation method based on user preference
       CalculationParameters params;
 
       switch (methodName) {
@@ -37,9 +37,12 @@ class PrayerTimeService {
           break;
       }
 
-      // Calculate prayer times for today
-      final prayerTimes = PrayerTimes.today(coordinates, params);
+      // Calculate prayer times for today using actual sunrise/sunset
+      final now = DateTime.now();
+      final prayerTimes = PrayerTimes(coordinates, DateComponents.from(now), params);
 
+      // The adhan library automatically uses actual sunrise and sunset times
+      // based on the coordinates and date, so no manual calculation needed
       return {
         'Fajr': prayerTimes.fajr,
         'Sunrise': prayerTimes.sunrise,
@@ -50,19 +53,7 @@ class PrayerTimeService {
       };
     } catch (e) {
       print('Error calculating prayer times: $e');
-
-      // Fallback to approximate times
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-
-      return {
-        'Fajr': today.add(const Duration(hours: 5, minutes: 15)),
-        'Sunrise': today.add(const Duration(hours: 6, minutes: 35)),
-        'Dhuhr': today.add(const Duration(hours: 12, minutes: 30)),
-        'Asr': today.add(const Duration(hours: 15, minutes: 45)),
-        'Maghrib': today.add(const Duration(hours: 18, minutes: 25)),
-        'Isha': today.add(const Duration(hours: 19, minutes: 45)),
-      };
+      throw Exception('Failed to calculate prayer times: ${e.toString()}');
     }
   }
 
