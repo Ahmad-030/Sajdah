@@ -760,6 +760,9 @@ class _NotificationTesterScreenState extends State<NotificationTesterScreen> {
     );
   }
 
+// Find the NotificationTesterScreen class in your Setting_screen.dart
+// Replace the entire _NotificationTesterScreenState build method with this:
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -794,37 +797,39 @@ class _NotificationTesterScreenState extends State<NotificationTesterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.2),
-                        Colors.white.withOpacity(0.1),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.2),
+                          Colors.white.withOpacity(0.1),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: const [
+                        Icon(Icons.bug_report, color: Colors.white, size: 40),
+                        SizedBox(height: 10),
+                        Text(
+                          'Notification Tester',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Test azan sound & alarm notifications',
+                          style: TextStyle(color: Colors.white70),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    children: const [
-                      Icon(Icons.bug_report, color: Colors.white, size: 40),
-                      SizedBox(height: 10),
-                      Text(
-                        'Notification Tester',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Test azan sound & alarm notifications',
-                        style: TextStyle(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
                   ),
                 ),
 
@@ -861,29 +866,18 @@ class _NotificationTesterScreenState extends State<NotificationTesterScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: (MediaQuery.of(context).size.width - 50) / 2,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading ? null : _checkAlarmStates,
-                        icon: const Icon(Icons.alarm),
-                        label: const Text('Check Alarms'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(15),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: (MediaQuery.of(context).size.width - 50) / 2,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading ? null : _checkSoundFile,
-                        icon: const Icon(Icons.audio_file),
-                        label: const Text('Check Sound'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(15),
+                    Center(
+                      child: SizedBox(
+                        width: (MediaQuery.of(context).size.width - 50) / 2,
+                        child: ElevatedButton.icon(
+                          onPressed: isLoading ? null : _checkAlarmStates,
+                          icon: const Icon(Icons.alarm),
+                          label: const Text('Check Alarms'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(15),
+                          ),
                         ),
                       ),
                     ),
@@ -919,101 +913,7 @@ class _NotificationTesterScreenState extends State<NotificationTesterScreen> {
 
                 const SizedBox(height: 20),
 
-                // Quick Tips
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.amber),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Row(
-                        children: [
-                          Icon(Icons.lightbulb, color: Colors.amber, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Quick Tips:',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        '• Ensure phone is not in silent mode\n'
-                            '• Volume should be UP\n'
-                            '• Disable "Do Not Disturb"\n'
-                            '• Grant all notification permissions\n'
-                            '• For Android 12+: Allow "Alarms & reminders"\n'
-                            '• Check notification channel settings',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Troubleshooting
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.red.withOpacity(0.5)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Row(
-                        children: [
-                          Icon(Icons.help_outline, color: Colors.red, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'No Sound? Troubleshooting:',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        '1. Check file exists:\n'
-                            '   android/app/src/main/res/raw/azan.mp3\n\n'
-                            '2. File name must be lowercase: "azan.mp3"\n\n'
-                            '3. Rebuild app after adding file:\n'
-                            '   flutter clean && flutter run\n\n'
-                            '4. Check phone notification settings:\n'
-                            '   Settings → Apps → Sajdah → Notifications\n\n'
-                            '5. Verify notification channel:\n'
-                            '   Prayer Times channel must be enabled',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          height: 1.5,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Success Indicators
+                // Success Indicators ONLY
                 Container(
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
