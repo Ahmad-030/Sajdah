@@ -31,8 +31,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String locationText = 'Detecting location...';
   bool isLoading = true;
 
-  Map<String, DateTime> prayerTimes = {};
-  Map<String, String> prayerTimesFormatted = {};
+  // Store both Adhan and Jamat times
+  Map<String, DateTime> adhanTimes = {};
+  Map<String, DateTime> jamatTimes = {};
+  Map<String, String> adhanTimesFormatted = {};
+  Map<String, String> jamatTimesFormatted = {};
   Map<String, dynamic>? locationData;
 
   Map<String, bool> alarmEnabled = {};
@@ -71,16 +74,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       locationData = await LocationService.getCurrentLocation();
 
-      prayerTimes = await PrayerTimeService.calculatePrayerTimes(
+      // Calculate Adhan times
+      adhanTimes = await PrayerTimeService.calculatePrayerTimes(
         locationData!['latitude'],
         locationData!['longitude'],
       );
+
+      // Calculate Jamat times (Adhan + 15 minutes)
+      jamatTimes = PrayerTimeService.getJamatTimes(adhanTimes);
 
       _formatPrayerTimes();
 
       _updateNextPrayer();
 
-      await NotificationService.scheduleAllPrayerNotifications(prayerTimes);
+      // Schedule notifications for Jamat times
+      await NotificationService.scheduleAllPrayerNotifications(jamatTimes);
 
       await _updateHomeWidget();
 
@@ -136,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _updateHomeWidget() async {
     try {
       await HomeWidget.saveWidgetData<String>('next_prayer', nextPrayer);
-      await HomeWidget.saveWidgetData<String>('prayer_time', prayerTimesFormatted[nextPrayer] ?? '');
+      await HomeWidget.saveWidgetData<String>('prayer_time', jamatTimesFormatted[nextPrayer] ?? '');
       await HomeWidget.saveWidgetData<String>('time_remaining', timeUntilPrayer);
       await HomeWidget.updateWidget(
         name: 'SajdahWidgetProvider',
@@ -149,7 +157,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _formatPrayerTimes() {
-    prayerTimesFormatted = prayerTimes.map((key, value) {
+    // Format Adhan times
+    adhanTimesFormatted = adhanTimes.map((key, value) {
+      final hour = value.hour > 12 ? value.hour - 12 : (value.hour == 0 ? 12 : value.hour);
+      final minute = value.minute.toString().padLeft(2, '0');
+      final period = value.hour >= 12 ? 'PM' : 'AM';
+      return MapEntry(key, '$hour:$minute $period');
+    });
+
+    // Format Jamat times
+    jamatTimesFormatted = jamatTimes.map((key, value) {
       final hour = value.hour > 12 ? value.hour - 12 : (value.hour == 0 ? 12 : value.hour);
       final minute = value.minute.toString().padLeft(2, '0');
       final period = value.hour >= 12 ? 'PM' : 'AM';
@@ -158,16 +175,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _updateNextPrayer() {
-    if (prayerTimes.isEmpty) return;
+    if (jamatTimes.isEmpty) return;
     setState(() {
-      nextPrayer = PrayerTimeService.getNextPrayer(prayerTimes);
+      nextPrayer = PrayerTimeService.getNextPrayer(jamatTimes);
     });
   }
 
   void _updateCountdown() {
-    if (prayerTimes.isEmpty || nextPrayer == 'Loading...') return;
+    if (jamatTimes.isEmpty || nextPrayer == 'Loading...') return;
 
-    final prayerTime = prayerTimes[nextPrayer];
+    final prayerTime = jamatTimes[nextPrayer];
     if (prayerTime == null) return;
 
     final duration = PrayerTimeService.getTimeUntilPrayer(prayerTime);
@@ -200,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     await PrayerTimeService.saveAlarmState(prayer, value);
 
-    if (prayerTimes.isNotEmpty) {
-      await NotificationService.scheduleAllPrayerNotifications(prayerTimes);
+    if (jamatTimes.isNotEmpty) {
+      await NotificationService.scheduleAllPrayerNotifications(jamatTimes);
     }
 
     if (mounted) {
@@ -351,11 +368,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Current Time',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: const Text(
+                                        'Current Time',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -429,19 +449,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                                   child: Column(
                                     children: [
-                                      Row(
-                                        children: const [
-                                          Icon(Icons.mosque, color: Colors.white, size: 24),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Next Prayer',
-                                            style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8.0),
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.mosque, color: Colors.white, size: 24),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Next Jamat',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(height: 15),
                                       Text(
@@ -455,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        prayerTimesFormatted[nextPrayer] ?? '',
+                                        jamatTimesFormatted[nextPrayer] ?? '',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 24,
@@ -524,14 +547,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 15),
 
-                      ...prayerTimesFormatted.entries
+                      ...jamatTimesFormatted.entries
                           .where((e) => e.key != 'Sunrise')
                           .map((entry) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 15),
                           child: PrayerCard(
                             prayerName: entry.key,
-                            prayerTime: entry.value,
+                            adhanTime: adhanTimesFormatted[entry.key] ?? '',
+                            jamatTime: entry.value,
                             isAlarmOn: alarmEnabled[entry.key] ?? true,
                             onAlarmToggle: (value) => _handleAlarmToggle(entry.key, value),
                           ),

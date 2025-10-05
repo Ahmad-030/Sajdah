@@ -3,14 +3,16 @@ import 'dart:ui';
 
 class PrayerCard extends StatelessWidget {
   final String prayerName;
-  final String prayerTime;
+  final String adhanTime;
+  final String jamatTime;
   final bool isAlarmOn;
   final Function(bool) onAlarmToggle;
 
   const PrayerCard({
     Key? key,
     required this.prayerName,
-    required this.prayerTime,
+    required this.adhanTime,
+    required this.jamatTime,
     required this.isAlarmOn,
     required this.onAlarmToggle,
   }) : super(key: key);
@@ -18,15 +20,15 @@ class PrayerCard extends StatelessWidget {
   IconData _getPrayerIcon(String prayer) {
     switch (prayer) {
       case 'Fajr':
-        return Icons.wb_twilight; // Dawn/morning twilight
+        return Icons.wb_twilight;
       case 'Dhuhr':
-        return Icons.wb_sunny; // Midday sun
+        return Icons.wb_sunny;
       case 'Asr':
-        return Icons.wb_sunny_outlined; // Afternoon
+        return Icons.wb_sunny_outlined;
       case 'Maghrib':
-        return Icons.wb_cloudy; // Sunset/evening
+        return Icons.wb_cloudy;
       case 'Isha':
-        return Icons.nightlight; // Night
+        return Icons.nightlight;
       default:
         return Icons.access_time;
     }
@@ -35,15 +37,15 @@ class PrayerCard extends StatelessWidget {
   Color _getPrayerColor(String prayer) {
     switch (prayer) {
       case 'Fajr':
-        return const Color(0xFF7E57C2); // Purple - Dawn
+        return const Color(0xFF7E57C2);
       case 'Dhuhr':
-        return const Color(0xFFFFB74D); // Light Orange - Noon
+        return const Color(0xFFFFB74D);
       case 'Asr':
-        return const Color(0xFFFF9800); // Orange - Afternoon
+        return const Color(0xFFFF9800);
       case 'Maghrib':
-        return const Color(0xFFE91E63); // Pink - Sunset
+        return const Color(0xFFE91E63);
       case 'Isha':
-        return const Color(0xFF5C6BC0); // Indigo - Night
+        return const Color(0xFF5C6BC0);
       default:
         return const Color(0xFF66BB6A);
     }
@@ -164,25 +166,80 @@ class PrayerCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
+
+                      // Adhan Time Row
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: prayerColor.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Adhan',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
                           Icon(
                             Icons.access_time_rounded,
-                            size: 14,
+                            size: 18,
                             color: isDark ? Colors.white70 : Colors.black54,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            prayerTime,
+                            adhanTime,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               color: isDark ? Colors.white70 : Colors.black87,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 6),
+
+                      // // Jamat Time Row (Highlighted)
+                      // Row(
+                      //   children: [
+                      //     Container(
+                      //       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      //       decoration: BoxDecoration(
+                      //         color: prayerColor,
+                      //         borderRadius: BorderRadius.circular(4),
+                      //       ),
+                      //       child: const Text(
+                      //         'Jamat',
+                      //         style: TextStyle(
+                      //           fontSize: 10,
+                      //           fontWeight: FontWeight.bold,
+                      //           color: Colors.white,
+                      //         ),
+                      //       ),
+                      //     ),
+                      //     const SizedBox(width: 6),
+                      //     Icon(
+                      //       Icons.groups,
+                      //       size: 14,
+                      //       color: prayerColor,
+                      //     ),
+                      //     const SizedBox(width: 4),
+                      //     Text(
+                      //       jamatTime,
+                      //       style: TextStyle(
+                      //         fontSize: 16,
+                      //         color: isDark ? Colors.white : Colors.black87,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),

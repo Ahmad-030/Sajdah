@@ -2,6 +2,9 @@ import 'package:adhan/adhan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrayerTimeService {
+  // Jamat time delay in minutes after Adhan
+  static const int JAMAT_DELAY_MINUTES = 15;
+
   static Future<Map<String, DateTime>> calculatePrayerTimes(
       double latitude,
       double longitude,
@@ -37,12 +40,11 @@ class PrayerTimeService {
           break;
       }
 
-      // Calculate prayer times for today using actual sunrise/sunset
+      // Calculate prayer times for today
       final now = DateTime.now();
       final prayerTimes = PrayerTimes(coordinates, DateComponents.from(now), params);
 
-      // The adhan library automatically uses actual sunrise and sunset times
-      // based on the coordinates and date, so no manual calculation needed
+      // Return Adhan times (original prayer times)
       return {
         'Fajr': prayerTimes.fajr,
         'Sunrise': prayerTimes.sunrise,
@@ -55,6 +57,18 @@ class PrayerTimeService {
       print('Error calculating prayer times: $e');
       throw Exception('Failed to calculate prayer times: ${e.toString()}');
     }
+  }
+
+  // Get Jamat times (Adhan + 15 minutes)
+  static Map<String, DateTime> getJamatTimes(Map<String, DateTime> adhanTimes) {
+    return {
+      'Fajr': adhanTimes['Fajr']!.add(const Duration(minutes: JAMAT_DELAY_MINUTES)),
+      'Sunrise': adhanTimes['Sunrise']!, // Sunrise doesn't have Jamat
+      'Dhuhr': adhanTimes['Dhuhr']!.add(const Duration(minutes: JAMAT_DELAY_MINUTES)),
+      'Asr': adhanTimes['Asr']!.add(const Duration(minutes: JAMAT_DELAY_MINUTES)),
+      'Maghrib': adhanTimes['Maghrib']!.add(const Duration(minutes: JAMAT_DELAY_MINUTES)),
+      'Isha': adhanTimes['Isha']!.add(const Duration(minutes: JAMAT_DELAY_MINUTES)),
+    };
   }
 
   static String getNextPrayer(Map<String, DateTime> prayerTimes) {
@@ -127,4 +141,5 @@ class PrayerTimeService {
 
     return states;
   }
+
 }

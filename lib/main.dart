@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:device_frame/device_frame.dart';
+
 import 'Screens/Splash_screen.dart';
 import 'Services/Notification_Service.dart';
 
@@ -13,9 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   tz.initializeTimeZones();
-
   await NotificationService.initialize();
-
   await _requestPermissions();
 
   SystemChrome.setSystemUIOverlayStyle(
@@ -44,7 +45,7 @@ class SajdahApp extends StatefulWidget {
 }
 
 class _SajdahAppState extends State<SajdahApp> {
-  bool isDarkMode = true; // Default to dark mode
+  bool isDarkMode = true;
 
   void toggleTheme() {
     setState(() {
@@ -54,7 +55,7 @@ class _SajdahAppState extends State<SajdahApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final Widget coreApp = MaterialApp(
       title: 'Sajdah',
       debugShowCheckedModeBanner: false,
       theme: isDarkMode ? _darkTheme() : _lightTheme(),
@@ -64,8 +65,40 @@ class _SajdahAppState extends State<SajdahApp> {
         isDarkMode: isDarkMode,
       ),
     );
+
+    // ✅ In debug mode, wrap entire app in a DeviceFrame
+    if (kDebugMode) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: DeviceFrame(
+                device: Devices.ios.iPhone13ProMax,
+                isFrameVisible: true,
+                orientation: Orientation.portrait,
+                screen: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: SizedBox(
+                    width: 428, // iPhone 13 Pro Max width
+                    height: 926, // iPhone 13 Pro Max height
+                    child: coreApp,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ✅ In release mode, run normal app
+    return coreApp;
   }
 
+  // ---------------- THEMES ----------------
   ThemeData _lightTheme() {
     return ThemeData(
       brightness: Brightness.light,

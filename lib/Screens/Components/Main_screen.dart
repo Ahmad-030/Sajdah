@@ -19,14 +19,20 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
-
+  late AnimationController _animationController;
   late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
     _pages = [
       HomeScreen(
         toggleTheme: widget.toggleTheme,
@@ -38,11 +44,31 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
         child: _pages[_selectedIndex],
       ),
       bottomNavigationBar: GlassyNavigationBar(
@@ -51,8 +77,9 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             _selectedIndex = index;
           });
+          _animationController.forward(from: 0);
         },
-        selectedColor: Theme.of(context).colorScheme.primary,
+        selectedColor: const Color(0xFF4CAF50),
         unselectedColor: Colors.grey.withOpacity(0.6),
         items: const [
           GlassyNavItem(
