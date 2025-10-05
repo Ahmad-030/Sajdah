@@ -12,16 +12,12 @@ FlutterLocalNotificationsPlugin();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize timezone
   tz.initializeTimeZones();
 
-  // Initialize notifications
   await NotificationService.initialize();
 
-  // Request permissions
   await _requestPermissions();
 
-  // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -33,10 +29,8 @@ void main() async {
 }
 
 Future<void> _requestPermissions() async {
-  // Request location permission
   await Permission.location.request();
 
-  // Request notification permission (Android 13+)
   if (await Permission.notification.isDenied) {
     await Permission.notification.request();
   }
@@ -50,7 +44,7 @@ class SajdahApp extends StatefulWidget {
 }
 
 class _SajdahAppState extends State<SajdahApp> {
-  bool isDarkMode = false;
+  bool isDarkMode = true; // Default to dark mode
 
   void toggleTheme() {
     setState(() {
@@ -81,6 +75,9 @@ class _SajdahAppState extends State<SajdahApp> {
         primary: Color(0xFF2E7D32),
         secondary: Color(0xFF00BFA5),
         surface: Colors.white,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Color(0xFF1A1A1A),
       ),
       cardTheme: const CardThemeData(
         elevation: 8,
@@ -89,6 +86,11 @@ class _SajdahAppState extends State<SajdahApp> {
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
       ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
     );
   }
 
@@ -96,18 +98,34 @@ class _SajdahAppState extends State<SajdahApp> {
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: const Color(0xFF1B5E20),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: const Color(0xFF0A0E0D),
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFF4CAF50),
         secondary: Color(0xFF00BFA5),
-        surface: Color(0xFF1E1E1E),
+        surface: Color(0xFF1A1F1E),
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Colors.white,
+        background: Color(0xFF0A0E0D),
       ),
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         elevation: 8,
-        color: Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(
+        color: const Color(0xFF1A1F1E),
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
+        shadowColor: Colors.black.withOpacity(0.5),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF1B5E20),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Colors.white),
+        bodyMedium: TextStyle(color: Colors.white70),
+        titleLarge: TextStyle(color: Colors.white),
+        titleMedium: TextStyle(color: Colors.white),
       ),
     );
   }

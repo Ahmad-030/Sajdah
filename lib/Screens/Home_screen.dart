@@ -67,28 +67,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         isLoading = true;
       });
 
-      // Load saved alarm states
       alarmEnabled = await PrayerTimeService.loadAllAlarmStates();
 
-      // Get location
       locationData = await LocationService.getCurrentLocation();
 
-      // Calculate prayer times
       prayerTimes = await PrayerTimeService.calculatePrayerTimes(
         locationData!['latitude'],
         locationData!['longitude'],
       );
 
-      // Format prayer times
       _formatPrayerTimes();
 
-      // Update next prayer
       _updateNextPrayer();
 
-      // Schedule notifications
       await NotificationService.scheduleAllPrayerNotifications(prayerTimes);
 
-      // Update home screen widget
       await _updateHomeWidget();
 
       setState(() {
@@ -100,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
-              children: [
+              children: const [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 10),
                 Text('Prayer times updated'),
@@ -108,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
             backgroundColor: Colors.green,
           ),
         );
@@ -124,14 +117,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.error, color: Colors.white),
-                SizedBox(width: 10),
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 10),
                 Expanded(child: Text('Error: ${e.toString()}')),
               ],
             ),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
             backgroundColor: Colors.red,
           ),
         );
@@ -217,13 +210,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           content: Row(
             children: [
               Icon(value ? Icons.notifications_active : Icons.notifications_off, color: Colors.white),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Text(value ? '$prayer alarm enabled' : '$prayer alarm disabled'),
             ],
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: Duration(seconds: 1),
+          duration: const Duration(seconds: 1),
         ),
       );
     }
@@ -246,21 +239,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             end: Alignment.bottomRight,
             colors: widget.isDarkMode
                 ? [
-              Color(0xFF1B5E20),
-              Color(0xFF004D40),
-              Color(0xFF263238),
+              const Color(0xFF1B5E20),
+              const Color(0xFF0D4D3D),
+              const Color(0xFF0A1F1C),
             ]
                 : [
-              Color(0xFF2E7D32),
-              Color(0xFF00897B),
-              Color(0xFF42A5F5),
+              const Color(0xFF2E7D32),
+              const Color(0xFF00897B),
+              const Color(0xFF42A5F5),
             ],
           ),
         ),
         child: SafeArea(
           child: CustomScrollView(
             slivers: [
-              // Modern App Bar
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -273,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Sajdah',
                                 style: TextStyle(
                                   fontSize: 32,
@@ -282,14 +274,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   letterSpacing: 1,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(Icons.location_on, color: Colors.white70, size: 16),
-                                  SizedBox(width: 4),
+                                  const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                                  const SizedBox(width: 4),
                                   Text(
                                     locationText,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white70,
                                       fontSize: 14,
                                     ),
@@ -302,8 +294,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             children: [
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1,
+                                  ),
                                 ),
                                 child: IconButton(
                                   icon: Icon(
@@ -313,14 +309,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   onPressed: widget.toggleTheme,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1,
+                                  ),
                                 ),
                                 child: IconButton(
-                                  icon: Icon(Icons.refresh, color: Colors.white),
+                                  icon: const Icon(Icons.refresh, color: Colors.white),
                                   onPressed: _initializeApp,
                                 ),
                               ),
@@ -328,14 +328,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      SizedBox(height: 20),
-                      // Current Time Display
+                      const SizedBox(height: 20),
                       Container(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.15),
+                              Colors.white.withOpacity(0.08),
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
@@ -347,17 +351,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Current Time',
                                       style: TextStyle(
                                         color: Colors.white70,
                                         fontSize: 14,
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     Text(
                                       currentTime,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
@@ -365,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                   ],
                                 ),
-                                Icon(Icons.access_time, color: Colors.white, size: 40),
+                                const Icon(Icons.access_time, color: Colors.white, size: 40),
                               ],
                             ),
                           ),
@@ -378,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
               SliverToBoxAdapter(
                 child: isLoading
-                    ? Center(
+                    ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(40.0),
                     child: CircularProgressIndicator(
@@ -390,33 +394,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
                     children: [
-                      // Next Prayer Card with Animation
                       AnimatedBuilder(
                         animation: _pulseController,
                         builder: (context, child) {
                           return Transform.scale(
                             scale: 1.0 + (math.sin(_pulseController.value * 2 * math.pi) * 0.02),
                             child: Container(
-                              padding: EdgeInsets.all(30),
+                              padding: const EdgeInsets.all(30),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.white.withOpacity(0.25),
-                                    Colors.white.withOpacity(0.15),
+                                    Colors.white.withOpacity(0.2),
+                                    Colors.white.withOpacity(0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withOpacity(0.25),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withOpacity(0.3),
                                     blurRadius: 20,
-                                    spreadRadius: 5,
+                                    spreadRadius: 2,
                                   ),
                                 ],
                               ),
@@ -427,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   child: Column(
                                     children: [
                                       Row(
-                                        children: [
+                                        children: const [
                                           Icon(Icons.mosque, color: Colors.white, size: 24),
                                           SizedBox(width: 8),
                                           Text(
@@ -440,43 +443,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 15),
+                                      const SizedBox(height: 15),
                                       Text(
                                         nextPrayer,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 42,
                                           fontWeight: FontWeight.bold,
                                           letterSpacing: 1,
                                         ),
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Text(
                                         prayerTimesFormatted[nextPrayer] ?? '',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      SizedBox(height: 20),
+                                      const SizedBox(height: 20),
                                       Container(
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: 25,
                                           vertical: 15,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.3),
+                                          color: Colors.white.withOpacity(0.2),
                                           borderRadius: BorderRadius.circular(20),
                                         ),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Icon(Icons.timer, color: Colors.white, size: 20),
-                                            SizedBox(width: 8),
+                                            const Icon(Icons.timer, color: Colors.white, size: 20),
+                                            const SizedBox(width: 8),
                                             Text(
                                               timeUntilPrayer,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 32,
                                                 fontWeight: FontWeight.bold,
@@ -493,9 +496,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           );
                         },
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
-                      // Prayer Times List Header
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                         child: Row(
@@ -508,8 +510,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
-                            SizedBox(width: 10),
-                            Text(
+                            const SizedBox(width: 10),
+                            const Text(
                               'Today\'s Prayers',
                               style: TextStyle(
                                 fontSize: 22,
@@ -520,9 +522,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ],
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
 
-                      // Prayer Times List
                       ...prayerTimesFormatted.entries
                           .where((e) => e.key != 'Sunrise')
                           .map((entry) {
@@ -537,7 +538,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         );
                       }).toList(),
 
-                      SizedBox(height: 80), // Space for bottom nav
+                      const SizedBox(height: 80),
                     ],
                   ),
                 ),

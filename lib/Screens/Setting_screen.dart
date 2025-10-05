@@ -73,7 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: [
+            children: const [
               Icon(Icons.volume_up, color: Colors.white),
               SizedBox(width: 10),
               Text('Test notification sent!'),
@@ -81,10 +81,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  void _openNotificationTester() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NotificationTesterScreen(),
+      ),
+    );
   }
 
   @override
@@ -98,8 +107,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [Color(0xFF1B5E20), Color(0xFF004D40), Color(0xFF263238)]
-                : [Color(0xFF2E7D32), Color(0xFF00897B), Color(0xFF42A5F5)],
+                ? [
+              const Color(0xFF1B5E20),
+              const Color(0xFF0D4D3D),
+              const Color(0xFF0A1F1C),
+            ]
+                : [
+              const Color(0xFF2E7D32),
+              const Color(0xFF00897B),
+              const Color(0xFF42A5F5)
+            ],
           ),
         ),
         child: SafeArea(
@@ -111,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Settings',
                         style: TextStyle(
                           fontSize: 32,
@@ -120,8 +137,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           letterSpacing: 1,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 4),
+                      const Text(
                         'Customize your prayer experience',
                         style: TextStyle(
                           color: Colors.white70,
@@ -138,9 +155,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Notification Tester Card
+                      _buildSectionTitle('Testing & Debug', Icons.bug_report),
+                      const SizedBox(height: 15),
+                      _buildGlassCard(
+                        child: Column(
+                          children: [
+                            _buildSettingTile(
+                              icon: Icons.science,
+                              title: 'Notification Tester',
+                              subtitle: 'Test azan sound & alarms',
+                              trailing: ElevatedButton.icon(
+                                onPressed: _openNotificationTester,
+                                icon: const Icon(Icons.play_arrow, size: 16),
+                                label: const Text('Open'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.purple,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
                       // Notifications Section
                       _buildSectionTitle('Notifications', Icons.notifications_active),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       _buildGlassCard(
                         child: Column(
                           children: [
@@ -168,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               title: 'Reminder Before Prayer',
                               subtitle: '$reminderMinutes minutes before azaan',
                               trailing: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(8),
@@ -177,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   value: reminderMinutes,
                                   underline: Container(),
                                   dropdownColor: Colors.grey[800],
-                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
                                   items: [5, 10, 15, 20, 30]
                                       .map((min) => DropdownMenuItem(
                                     value: min,
@@ -200,8 +246,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               subtitle: 'Preview azaan sound',
                               trailing: ElevatedButton.icon(
                                 onPressed: _testNotification,
-                                icon: Icon(Icons.play_arrow, size: 16),
-                                label: Text('Test'),
+                                icon: const Icon(Icons.play_arrow, size: 16),
+                                label: const Text('Test'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
@@ -215,11 +261,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
                       // Prayer Calculation Section
                       _buildSectionTitle('Prayer Calculation', Icons.calculate),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       _buildGlassCard(
                         child: Column(
                           children: [
@@ -228,7 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               title: 'Calculation Method',
                               subtitle: calculationMethod,
                               trailing: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(8),
@@ -237,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   value: calculationMethod,
                                   underline: Container(),
                                   dropdownColor: Colors.grey[800],
-                                  style: TextStyle(color: Colors.white, fontSize: 13),
+                                  style: const TextStyle(color: Colors.white, fontSize: 13),
                                   items: methods
                                       .map((method) => DropdownMenuItem(
                                     value: method,
@@ -261,7 +307,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               title: 'Location',
                               subtitle: locationText,
                               trailing: IconButton(
-                                icon: Icon(Icons.refresh, color: Colors.white),
+                                icon: const Icon(Icons.refresh, color: Colors.white),
                                 onPressed: () async {
                                   setState(() {
                                     locationText = 'Updating...';
@@ -275,11 +321,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
 
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
                       // About Section
                       _buildSectionTitle('About', Icons.info_outline),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       _buildGlassCard(
                         child: Column(
                           children: [
@@ -287,7 +333,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               icon: Icons.mosque,
                               title: 'About Sajdah',
                               subtitle: 'Prayer times & Qibla direction',
-                              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
                               onTap: () => _showAboutDialog(),
                             ),
                             Divider(color: Colors.white24, height: 1),
@@ -295,21 +341,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               icon: Icons.info_outline,
                               title: 'App Version',
                               subtitle: '1.0.0 - Modern UI Edition',
-                              trailing: SizedBox.shrink(),
+                              trailing: const SizedBox.shrink(),
                             ),
                             Divider(color: Colors.white24, height: 1),
                             _buildSettingTile(
                               icon: Icons.privacy_tip_outlined,
                               title: 'Privacy Policy',
                               subtitle: 'Your data is safe',
-                              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
                               onTap: () => _showPrivacyDialog(),
                             ),
                           ],
                         ),
                       ),
 
-                      SizedBox(height: 80), // Space for bottom nav
+                      const SizedBox(height: 80), // Space for bottom nav
                     ],
                   ),
                 ),
@@ -325,17 +371,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: Colors.white, size: 20),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -381,30 +427,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: Colors.white, size: 22),
             ),
-            SizedBox(width: 15),
+            const SizedBox(width: 15),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
                       color: Colors.white70,
                     ),
@@ -426,7 +472,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: Text(message),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -440,8 +486,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Row(
           children: [
             Icon(Icons.mosque, color: Theme.of(context).colorScheme.primary),
-            SizedBox(width: 10),
-            Text('About Sajdah'),
+            const SizedBox(width: 10),
+            const Text('About Sajdah'),
           ],
         ),
         content: SingleChildScrollView(
@@ -449,18 +495,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Sajdah helps you stay connected to your prayers with:',
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               _buildFeature('✨', 'Accurate prayer times based on your location'),
               _buildFeature('🔔', 'Azaan notifications with authentic sound'),
               _buildFeature('🧭', 'Qibla direction compass'),
               _buildFeature('📐', 'Multiple calculation methods'),
               _buildFeature('🌓', 'Beautiful dark & light themes'),
               _buildFeature('📱', 'Home screen widget support'),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               Text(
                 'May Allah accept your prayers. 🤲',
                 style: TextStyle(
@@ -474,7 +520,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -490,8 +536,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Row(
           children: [
             Icon(Icons.privacy_tip, color: Theme.of(context).colorScheme.primary),
-            SizedBox(width: 10),
-            Text('Privacy Policy'),
+            const SizedBox(width: 10),
+            const Text('Privacy Policy'),
           ],
         ),
         content: SingleChildScrollView(
@@ -499,19 +545,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Sajdah Prayer Times App',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              SizedBox(height: 15),
-              Text('We respect your privacy. This app:'),
-              SizedBox(height: 10),
+              const SizedBox(height: 15),
+              const Text('We respect your privacy. This app:'),
+              const SizedBox(height: 10),
               _buildPrivacyPoint('📍', 'Uses location only for accurate prayer time calculations'),
               _buildPrivacyPoint('🔒', 'Does not collect or store personal data'),
               _buildPrivacyPoint('🚫', 'Does not share data with third parties'),
               _buildPrivacyPoint('💾', 'Stores preferences locally on your device'),
               _buildPrivacyPoint('✅', 'Works completely offline after initial setup'),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               Text(
                 'Location permission is required only for calculating prayer times based on your geographical position.',
                 style: TextStyle(
@@ -526,7 +572,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -539,12 +585,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: TextStyle(fontSize: 18)),
-          SizedBox(width: 10),
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 14, height: 1.4),
+              style: const TextStyle(fontSize: 14, height: 1.4),
             ),
           ),
         ],
@@ -558,15 +604,462 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: TextStyle(fontSize: 16)),
-          SizedBox(width: 10),
+          Text(icon, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 13, height: 1.3),
+              style: const TextStyle(fontSize: 13, height: 1.3),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Notification Tester Screen
+class NotificationTesterScreen extends StatefulWidget {
+  const NotificationTesterScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NotificationTesterScreen> createState() => _NotificationTesterScreenState();
+}
+
+class _NotificationTesterScreenState extends State<NotificationTesterScreen> {
+  String testResult = 'Tap a button to test';
+  bool isLoading = false;
+
+  Future<void> _testImmediateNotification() async {
+    setState(() {
+      isLoading = true;
+      testResult = 'Testing immediate notification...';
+    });
+
+    try {
+      await NotificationService.showImmediateNotification(
+        title: '🕌 Azaan Test',
+        body: 'This is how prayer notifications will appear with azan sound',
+      );
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      setState(() {
+        testResult = '✅ SUCCESS: Check if you heard the azan sound!\n\n'
+            'If you heard the sound: Perfect! ✓\n'
+            'If no sound: Check troubleshooting below';
+        isLoading = false;
+      });
+
+      _showSnackBar('Test notification sent! Did you hear the azan?', Colors.green);
+    } catch (e) {
+      setState(() {
+        testResult = '❌ ERROR: ${e.toString()}';
+        isLoading = false;
+      });
+      _showSnackBar('Error: ${e.toString()}', Colors.red);
+    }
+  }
+
+  Future<void> _testScheduledNotification() async {
+    setState(() {
+      isLoading = true;
+      testResult = 'Scheduling test notification in 10 seconds...';
+    });
+
+    try {
+      final testTime = DateTime.now().add(const Duration(seconds: 10));
+
+      await NotificationService.schedulePrayerNotification(
+        id: 999,
+        prayerName: 'Test',
+        prayerTime: testTime,
+      );
+
+      setState(() {
+        testResult = '✅ Scheduled for: ${testTime.hour}:${testTime.minute.toString().padLeft(2, '0')}:${testTime.second.toString().padLeft(2, '0')}\n\n'
+            'Wait 10 seconds for notification with azan sound...\n\n'
+            'Keep app open or minimized.\n'
+            'Notification will appear in 10 seconds.';
+        isLoading = false;
+      });
+
+      _showSnackBar('Notification scheduled! Wait 10 seconds...', Colors.orange);
+    } catch (e) {
+      setState(() {
+        testResult = '❌ ERROR: ${e.toString()}';
+        isLoading = false;
+      });
+      _showSnackBar('Error: ${e.toString()}', Colors.red);
+    }
+  }
+
+  Future<void> _checkAlarmStates() async {
+    setState(() {
+      isLoading = true;
+      testResult = 'Checking alarm states...';
+    });
+
+    try {
+      final alarms = await PrayerTimeService.loadAllAlarmStates();
+
+      String result = '📋 Alarm States:\n\n';
+      alarms.forEach((prayer, enabled) {
+        result += '${enabled ? "✅" : "❌"} $prayer: ${enabled ? "ENABLED" : "DISABLED"}\n';
+      });
+
+      result += '\n💡 Tip: Toggle alarms in Home screen';
+
+      setState(() {
+        testResult = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        testResult = '❌ ERROR: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkSoundFile() async {
+    setState(() {
+      isLoading = true;
+      testResult = 'Checking azan sound configuration...';
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    String result = '🔊 Sound File Check:\n\n';
+    result += '✅ Sound configured in code: "azan"\n';
+    result += '📁 Expected location:\n';
+    result += '   android/app/src/main/res/raw/azan.mp3\n\n';
+    result += '📋 Verification steps:\n';
+    result += '1. File must exist at above location\n';
+    result += '2. File name: "azan.mp3" (lowercase)\n';
+    result += '3. Must be valid MP3 audio file\n';
+    result += '4. Recommended: 128kbps, 30-60s\n\n';
+    result += '🧪 Tap "Test Now" to verify sound plays';
+
+    setState(() {
+      testResult = result;
+      isLoading = false;
+    });
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notification Tester'),
+        backgroundColor: isDark ? const Color(0xFF1B5E20) : const Color(0xFF2E7D32),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+              const Color(0xFF1B5E20),
+              const Color(0xFF0D4D3D),
+              const Color(0xFF0A1F1C),
+            ]
+                : [
+              const Color(0xFF2E7D32),
+              const Color(0xFF00897B),
+              const Color(0xFF42A5F5)
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.2),
+                        Colors.white.withOpacity(0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    children: const [
+                      Icon(Icons.bug_report, color: Colors.white, size: 40),
+                      SizedBox(height: 10),
+                      Text(
+                        'Notification Tester',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Test azan sound & alarm notifications',
+                        style: TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Test Buttons
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    SizedBox(
+                      width: (MediaQuery.of(context).size.width - 50) / 2,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _testImmediateNotification,
+                        icon: const Icon(Icons.volume_up),
+                        label: const Text('Test Now'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(15),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: (MediaQuery.of(context).size.width - 50) / 2,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _testScheduledNotification,
+                        icon: const Icon(Icons.schedule),
+                        label: const Text('Test in 10s'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(15),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: (MediaQuery.of(context).size.width - 50) / 2,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _checkAlarmStates,
+                        icon: const Icon(Icons.alarm),
+                        label: const Text('Check Alarms'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(15),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: (MediaQuery.of(context).size.width - 50) / 2,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _checkSoundFile,
+                        icon: const Icon(Icons.audio_file),
+                        label: const Text('Check Sound'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Result Display
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: isLoading
+                      ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                      : Text(
+                    testResult,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Quick Tips
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.amber),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Row(
+                        children: [
+                          Icon(Icons.lightbulb, color: Colors.amber, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Quick Tips:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '• Ensure phone is not in silent mode\n'
+                            '• Volume should be UP\n'
+                            '• Disable "Do Not Disturb"\n'
+                            '• Grant all notification permissions\n'
+                            '• For Android 12+: Allow "Alarms & reminders"\n'
+                            '• Check notification channel settings',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Troubleshooting
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.red.withOpacity(0.5)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Row(
+                        children: [
+                          Icon(Icons.help_outline, color: Colors.red, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'No Sound? Troubleshooting:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '1. Check file exists:\n'
+                            '   android/app/src/main/res/raw/azan.mp3\n\n'
+                            '2. File name must be lowercase: "azan.mp3"\n\n'
+                            '3. Rebuild app after adding file:\n'
+                            '   flutter clean && flutter run\n\n'
+                            '4. Check phone notification settings:\n'
+                            '   Settings → Apps → Sajdah → Notifications\n\n'
+                            '5. Verify notification channel:\n'
+                            '   Prayer Times channel must be enabled',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          height: 1.5,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Success Indicators
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.green.withOpacity(0.5)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Success Indicators:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '✅ "Test Now" plays azan immediately\n'
+                            '✅ "Test in 10s" shows notification after 10s\n'
+                            '✅ Alarm states show enabled/disabled correctly\n'
+                            '✅ Sound file check shows correct path\n'
+                            '✅ No errors in result display',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
