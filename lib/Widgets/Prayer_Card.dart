@@ -180,7 +180,7 @@ class PrayerCard extends StatelessWidget {
                             child: Text(
                               'Adhan',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: isDark ? Colors.white : Colors.black87,
                               ),
@@ -189,14 +189,14 @@ class PrayerCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Icon(
                             Icons.access_time_rounded,
-                            size: 18,
+                            size: 15,
                             color: isDark ? Colors.white70 : Colors.black54,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             adhanTime,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 15,
                               color: isDark ? Colors.white70 : Colors.black87,
                               fontWeight: FontWeight.w600,
                             ),
